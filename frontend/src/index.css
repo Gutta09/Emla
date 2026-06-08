@@ -1,0 +1,187 @@
+:root {
+  --black:   #080808;
+  --dark:    #111111;
+  --dark2:   #1a1a1a;
+  --dark3:   #242424;
+  --dark4:   #2e2e2e;
+  --border:  #2a2a2a;
+  --border2: #383838;
+  --text:    #f0f0f0;
+  --text2:   #c8c8c8;
+  --muted:   #888888;
+  --muted2:  #555555;
+  --gold:    #c9a84c;
+  --gold2:   #e8c46a;
+  --gold3:   #a07830;
+  --amber:   #d4874e;
+  --green:   #3ddc84;
+  --red:     #ff5555;
+  --blue:    #5599ff;
+  --radius:  8px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --shadow:  0 4px 24px rgba(0,0,0,0.6);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  background-color: var(--black);
+  color: var(--text);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: "Barlow Condensed", "Inter", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+a {
+  color: var(--gold);
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  background: var(--dark3);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--gold);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track { background: var(--dark2); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted2); }
+
+/* Utility classes */
+.gold { color: var(--gold); }
+.muted { color: var(--muted); }
+.amber { color: var(--amber); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--black);
+  border: none;
+}
+.btn-primary:hover { background: var(--gold2); }
+
+.btn-secondary {
+  background: var(--dark3);
+  color: var(--text);
+  border: 1px solid var(--border2);
+}
+.btn-secondary:hover { background: var(--dark4); border-color: var(--gold); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+
+.btn-danger {
+  background: transparent;
+  color: var(--red);
+  border: 1px solid rgba(255,85,85,0.3);
+}
+.btn-danger:hover { background: rgba(255,85,85,0.1); }
+
+.card {
+  background: var(--dark2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.badge-gold {
+  background: rgba(201,168,76,0.15);
+  color: var(--gold);
+  border: 1px solid rgba(201,168,76,0.3);
+}
+
+.badge-green {
+  background: rgba(61,220,132,0.12);
+  color: var(--green);
+  border: 1px solid rgba(61,220,132,0.25);
+}
+
+.badge-muted {
+  background: rgba(136,136,136,0.12);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+.animate-slide-up { animation: slideUp 0.4s ease forwards; }
+.animate-pulse { animation: pulse 1.5s ease-in-out infinite; }

@@ -1,0 +1,14 @@
+fastapi==0.135.3
+uvicorn[standard]==0.42.0
+tensorflow==2.21.0
+keras==3.14.0
+numpy>=2.4.0
+opencv-python>=4.11.0
+mediapipe==0.10.35
+anthropic>=0.40.0
+aiofiles>=23.0.0
+pydantic>=2.12.0
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+websockets>=12.0
+scikit-learn

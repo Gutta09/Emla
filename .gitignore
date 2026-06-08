@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+*.egg
+
+# Env
+.env
+*.env.local
+
+# Data / Models (large files)
+data/
+models/*.keras
+models/**/*.keras
+models/**/*.npy
+models/**/confusion_matrix.png
+models/**/metadata.json
+models/*.task
+
+# Runtime files
+backend/session_history.json
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# macOS
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
