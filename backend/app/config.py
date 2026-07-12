@@ -9,12 +9,12 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    anthropic_api_key: str = ""
-    xai_api_key: str = ""
+    # Sentence assembly uses Gemini (Google AI Studio, free tier). Optional —
+    # without a key the service falls back to a deterministic join.
     gemini_api_key: str = ""
     port: int = 8000
     frontend_url: str = "http://localhost:5173"
-    confidence_threshold: float = 0.65
+    confidence_threshold: float = 0.45
     pause_frames: int = 15
     sequence_length: int = 30
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.schemas.api_schemas import TranslateRequest, TranslateResponse
-from app.services.claude_service import signs_to_sentence
+from app.services.sentence_service import signs_to_sentence
 from app.services import history_service
 import time
 

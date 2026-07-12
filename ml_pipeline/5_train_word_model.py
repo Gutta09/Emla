@@ -12,7 +12,7 @@ import tensorflow as tf
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from utils.dataset_utils import load_split, load_label_map
-from utils.augmentation import augment_sequence
+from utils.augmentation import augment_sequence, generate_augmented_dataset
 from utils.model_architectures import PositionalEncoding, TransformerBlock, get_positional_encoding  # registers serializable decorators
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -66,7 +66,15 @@ class AugmentedDataGenerator(tf.keras.utils.Sequence):
 def main():
     print("Loading data...")
     X_train, X_val, y_train, y_val = load_split(PROCESSED_DIR, "word")
-    print(f"  Train: {X_train.shape}, Val: {X_val.shape}")
+    print(f"  Raw train: {X_train.shape}, Val: {X_val.shape}")
+
+    # Oversample each class to 80 samples via heavy augmentation
+    print("  Augmenting training data to 80 samples per class...")
+    X_train, y_train = generate_augmented_dataset(X_train, y_train, target_per_class=80)
+    # Shuffle
+    perm = np.random.permutation(len(X_train))
+    X_train, y_train = X_train[perm], y_train[perm]
+    print(f"  Augmented train: {X_train.shape}")
 
     label_map = load_label_map(os.path.join(MODELS_DIR, "label_map.json"))
     num_classes = len(label_map)

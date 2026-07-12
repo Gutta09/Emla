@@ -55,6 +55,9 @@ def normalize_hands_only(
         scale = float(np.linalg.norm(h[9, :3] - wrist)) + 1e-6
         return ((h[:, :3] - wrist) / scale).flatten()
 
-    lh = _norm(left_hand) if left_hand is not None else np.zeros(HAND_COUNT * 3, dtype=np.float32)
-    rh = _norm(right_hand) if right_hand is not None else np.zeros(HAND_COUNT * 3, dtype=np.float32)
-    return np.concatenate([lh, rh]).astype(np.float32)
+    # Match training: primary detected hand in slot 1 (training used left if present, else right)
+    hand1 = left_hand if left_hand is not None else right_hand
+    hand2 = right_hand if (left_hand is not None and right_hand is not None) else None
+    h1 = _norm(hand1) if hand1 is not None else np.zeros(HAND_COUNT * 3, dtype=np.float32)
+    h2 = _norm(hand2) if hand2 is not None else np.zeros(HAND_COUNT * 3, dtype=np.float32)
+    return np.concatenate([h1, h2]).astype(np.float32)

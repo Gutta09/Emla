@@ -28,31 +28,41 @@ export default function PredictionBadge({ prediction, isConnected }: PredictionB
   }
 
   const { sign, confidence, uncertain } = prediction;
+  const noDetection = sign === "—";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div style={{ textAlign: "center" }}>
-        <div
-          className="animate-fade-in"
-          style={{
-            fontSize: uncertain ? 48 : 56,
-            fontFamily: "Barlow Condensed, sans-serif",
-            fontWeight: 700,
-            letterSpacing: "0.04em",
-            color: uncertain ? "var(--muted)" : "var(--gold2)",
-            lineHeight: 1,
-            transition: "color 0.2s",
-          }}
-        >
-          {uncertain ? "?" : sign}
-        </div>
-        {!uncertain && (
-          <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-            {prediction.mode === "fingerspell" ? "Letter" : "Sign"}
+        {noDetection ? (
+          <div style={{ fontSize: 13, color: "var(--amber)", padding: "16px 0" }}>
+            {(prediction as any).hint ?? "No hand or body detected"}
           </div>
+        ) : (
+          <>
+            <div
+              className="animate-fade-in"
+              style={{
+                fontSize: 56,
+                fontFamily: "Barlow Condensed, sans-serif",
+                fontWeight: 700,
+                letterSpacing: "0.04em",
+                color: uncertain ? "var(--muted2)" : "var(--gold2)",
+                lineHeight: 1,
+                transition: "color 0.15s",
+              }}
+            >
+              {sign || "?"}
+            </div>
+            <div style={{ fontSize: 12, marginTop: 4, letterSpacing: "0.08em", textTransform: "uppercase",
+              color: uncertain ? "var(--muted2)" : "var(--muted)" }}>
+              {uncertain
+                ? `maybe ${prediction.mode === "fingerspell" ? "letter" : "sign"}`
+                : prediction.mode === "fingerspell" ? "Letter" : "Sign"}
+            </div>
+          </>
         )}
       </div>
-      <ConfidenceBar value={confidence} uncertain={uncertain} />
+      {!noDetection && <ConfidenceBar value={confidence} uncertain={uncertain} />}
     </div>
   );
 }

@@ -61,7 +61,7 @@ export default function SentenceBuilder({ words, mode, onClear }: SentenceBuilde
         alignItems: "center",
       }}>
         {words.length === 0 ? (
-          <span style={{ fontSize: 13, color: "var(--muted2)" }}>Pause after each sign to commit a word…</span>
+          <span style={{ fontSize: 13, color: "var(--muted2)" }}>Sign and hold — recognized signs appear here automatically…</span>
         ) : (
           words.map((w, i) => (
             <span key={i} className="badge badge-gold" style={{ fontSize: 13, textTransform: "none", fontWeight: 500 }}>

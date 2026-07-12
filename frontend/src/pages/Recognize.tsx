@@ -139,9 +139,10 @@ export default function Recognize() {
             lineHeight: 1.6,
           }}>
             <strong style={{ color: "var(--gold)", display: "block", marginBottom: 4 }}>Tips</strong>
-            Hold each sign for ~1 second for best accuracy.
-            Stay still between signs — the system uses the pause to commit a word.
-            {mode === "fingerspell" ? " Fingerspell one letter at a time." : " Sign complete words with clear movement."}
+            {mode === "fingerspell"
+              ? "Show your hand clearly and hold each letter shape — it recognizes automatically."
+              : "Sign a full word and hold it for ~1 second — it commits automatically when confident."
+            }
           </div>
         </div>
       </div>

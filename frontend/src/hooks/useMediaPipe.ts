@@ -101,10 +101,10 @@ export function useMediaPipe(
       }
     }
 
-    // Pose dots
+    // Pose dots — skip face landmarks (0–10: nose, eyes, ears, mouth)
     ctx.fillStyle = "rgba(201,168,76,0.8)";
-    for (const lm of frame.pose) {
-      const { x, y } = toXY(lm);
+    for (let i = 11; i < frame.pose.length; i++) {
+      const { x, y } = toXY(frame.pose[i]);
       ctx.beginPath();
       ctx.arc(x, y, 3, 0, Math.PI * 2);
       ctx.fill();
@@ -161,25 +161,44 @@ export function useMediaPipe(
         const handResult = handLandmarkerRef.current.detectForVideo(video, ts);
         const poseResult = poseLandmarkerRef.current.detectForVideo(video, ts);
 
-        const pose: Landmark[] = poseResult.landmarks?.[0]?.map((lm: any) => ({ x: lm.x, y: lm.y, z: lm.z })) ?? [];
-        let leftHand: Landmark[] | null = null;
-        let rightHand: Landmark[] | null = null;
+        // Mirror x so backend coordinates match training data (trained on non-mirrored images)
+        const mx = (lm: any): Landmark => ({ x: 1 - lm.x, y: lm.y, z: lm.z });
+
+        // For display we keep original coords; for inference we flip x and swap left↔right
+        const poseDisplay: Landmark[] = poseResult.landmarks?.[0]?.map((lm: any) => ({ x: lm.x, y: lm.y, z: lm.z })) ?? [];
+        const poseInfer: Landmark[] = poseDisplay.map(mx);
+
+        let leftHandDisplay: Landmark[] | null = null;
+        let rightHandDisplay: Landmark[] | null = null;
+        let leftHandInfer: Landmark[] | null = null;
+        let rightHandInfer: Landmark[] | null = null;
 
         for (let i = 0; i < (handResult.handednesses?.length ?? 0); i++) {
           const side = handResult.handednesses[i]?.[0]?.categoryName?.toLowerCase();
-          const landmarks: Landmark[] = handResult.landmarks[i].map((lm: any) => ({ x: lm.x, y: lm.y, z: lm.z }));
-          if (side === "left") leftHand = landmarks;
-          else rightHand = landmarks;
+          const raw: Landmark[] = handResult.landmarks[i].map((lm: any) => ({ x: lm.x, y: lm.y, z: lm.z }));
+          const flipped = raw.map(mx);
+          if (side === "left") {
+            leftHandDisplay = raw;
+            // camera "left" = user's right hand (due to mirror) → send as right_hand to match training
+            rightHandInfer = flipped;
+          } else {
+            rightHandDisplay = raw;
+            // camera "right" = user's left hand → send as left_hand
+            leftHandInfer = flipped;
+          }
         }
 
-        if (pose.length > 0) {
-          const frame: LandmarkFrame = { pose, left_hand: leftHand, right_hand: rightHand };
-          setLastFrame(frame);
+        if (poseDisplay.length > 0) {
+          // Display frame uses original coords for correct skeleton drawing on mirrored canvas
+          const displayFrame: LandmarkFrame = { pose: poseDisplay, left_hand: leftHandDisplay, right_hand: rightHandDisplay };
+          // Infer frame has flipped+swapped coords to match training orientation
+          const inferFrame: LandmarkFrame = { pose: poseInfer, left_hand: leftHandInfer, right_hand: rightHandInfer };
+          setLastFrame(inferFrame);  // sent to backend
 
           const ctx = canvas.getContext("2d")!;
           canvas.width = video.videoWidth || 640;
           canvas.height = video.videoHeight || 480;
-          drawSkeleton(frame, canvas.width, canvas.height, ctx);
+          drawSkeleton(displayFrame, canvas.width, canvas.height, ctx);
         }
 
         rafRef.current = requestAnimationFrame(detect);

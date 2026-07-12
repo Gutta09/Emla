@@ -20,7 +20,7 @@ export function useRecognition(): UseRecognitionReturn {
   const { connected, modelsLoaded, vocabularySize, prediction, committedWord, sendLandmarks, sendClear, sendModeChange } = useWebSocket();
 
   const [sentence, setSentence] = useState<string[]>([]);
-  const [mode, setModeState] = useState<RecognizeMode>("word");
+  const [mode, setModeState] = useState<RecognizeMode>("fingerspell");
   const [frameBuffer, setFrameBuffer] = useState<LandmarkFrame[]>([]);
   const frameIdRef = useRef(0);
   const frameThrottleRef = useRef(0);

@@ -36,3 +36,12 @@ dist/
 # IDE
 .vscode/
 .idea/
+
+# local test venv
+backend/.venv-ci/
+backend/.pytest_cache/
+
+# Project report (personal, not part of the deliverable)
+REPORT.md
+REPORT.pdf
+*.pdf

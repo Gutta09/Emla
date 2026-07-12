@@ -16,11 +16,7 @@ async def landmark_websocket(websocket: WebSocket):
 
     models = websocket.app.state.models
     frame_buffer: collections.deque = collections.deque(maxlen=settings.sequence_length)
-    pause_detector = PauseDetector(
-        threshold_frames=settings.pause_frames,
-        motion_threshold=0.02,
-    )
-    last_committed: str | None = None
+    pause_detector = PauseDetector(confirm_frames=10, cooldown_frames=20)
 
     # Announce ready state
     await websocket.send_text(json.dumps({
@@ -42,7 +38,6 @@ async def landmark_websocket(websocket: WebSocket):
             if msg_type == "clear":
                 frame_buffer.clear()
                 pause_detector.reset()
-                last_committed = None
                 continue
 
             if msg_type == "mode_change":
@@ -54,7 +49,7 @@ async def landmark_websocket(websocket: WebSocket):
                 continue
 
             frame_id = data.get("frame_id", 0)
-            mode = data.get("mode", "word")
+            mode = data.get("mode", "fingerspell")
             payload = data.get("payload", {})
 
             pose = payload.get("pose") or []
@@ -71,6 +66,7 @@ async def landmark_websocket(websocket: WebSocket):
                     "top3": [], "uncertain": True, "frame_id": frame_id, "mode": mode,
                     "hint": "Show your hand to the camera",
                 }))
+                pause_detector.update("—", False)
                 continue
 
             # Word mode needs pose for body-relative normalization
@@ -80,6 +76,7 @@ async def landmark_websocket(websocket: WebSocket):
                     "top3": [], "uncertain": True, "frame_id": frame_id, "mode": mode,
                     "hint": "Step back so your upper body is visible",
                 }))
+                pause_detector.update("—", False)
                 continue
 
             # --- Normalize ---
@@ -98,37 +95,32 @@ async def landmark_websocket(websocket: WebSocket):
                 if models.fingerspell and models.fingerspell.is_loaded:
                     prediction = models.fingerspell.predict(hand_vec, frame_id)
                 else:
-                    prediction = {"type": "prediction", "sign": "?", "confidence": 0.0,
+                    prediction = {"sign": "?", "confidence": 0.0,
                                   "top3": [], "uncertain": True, "frame_id": frame_id, "mode": mode}
             else:
                 if len(frame_buffer) == settings.sequence_length:
-                    seq = np.array(frame_buffer)  # (30, 225)
+                    seq = np.array(frame_buffer)
                     if models.word and models.word.is_loaded:
                         prediction = models.word.predict(seq, frame_id)
                     else:
-                        prediction = {"type": "prediction", "sign": "?", "confidence": 0.0,
+                        prediction = {"sign": "?", "confidence": 0.0,
                                       "top3": [], "uncertain": True, "frame_id": frame_id, "mode": mode}
 
             if prediction is not None:
                 prediction["type"] = "prediction"
                 await websocket.send_text(json.dumps(prediction))
 
-            # --- Pause / word boundary ---
-            if pause_detector.update(body_vec) and prediction:
+                # --- Auto-commit: same confident sign held for N frames ---
                 sign = prediction.get("sign", "?")
-                conf = prediction.get("confidence", 0.0)
                 uncertain = prediction.get("uncertain", True)
+                conf = prediction.get("confidence", 0.0)
 
-                # Only commit a confident, non-duplicate sign
-                if not uncertain and sign != "?" and sign != last_committed:
-                    last_committed = sign
+                if pause_detector.update(sign, not uncertain):
                     await websocket.send_text(json.dumps({
                         "type": "word_committed",
                         "sign": sign,
                         "confidence": conf,
                     }))
-                else:
-                    last_committed = None  # reset so next different sign commits
 
     except WebSocketDisconnect:
         pass

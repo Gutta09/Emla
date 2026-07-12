@@ -1,39 +1,48 @@
 import numpy as np
+from collections import deque
 
 
 class PauseDetector:
-    """Detects word boundaries by measuring inter-frame hand motion energy."""
+    """Commits a sign when the same label is predicted confidently for N consecutive frames.
 
-    def __init__(self, threshold_frames: int = 15, motion_threshold: float = 0.02):
-        self.threshold_frames = threshold_frames
-        self.motion_threshold = motion_threshold
-        self._still_count = 0
-        self._prev_hand_vec: np.ndarray | None = None
+    No deliberate pause needed — just hold the sign and it auto-commits.
+    """
 
-    def update(self, frame_vec: np.ndarray) -> bool:
-        """Feed a normalized frame vector. Returns True exactly once when a pause is detected."""
-        # Use only the hand portion of the feature vector (indices 99:225)
-        hand_vec = frame_vec[99:]
+    def __init__(self, confirm_frames: int = 10, cooldown_frames: int = 20):
+        self.confirm_frames = confirm_frames   # frames of same confident sign to commit
+        self.cooldown_frames = cooldown_frames # frames to wait before committing same sign again
+        self._recent: deque = deque(maxlen=confirm_frames)
+        self._last_committed: str | None = None
+        self._cooldown: int = 0
 
-        if self._prev_hand_vec is None:
-            self._prev_hand_vec = hand_vec.copy()
+    def update(self, sign: str, confident: bool) -> bool:
+        """Feed current prediction. Returns True when a sign should be committed."""
+        if self._cooldown > 0:
+            self._cooldown -= 1
+
+        if not confident or not sign or sign in ("?", "—"):
+            self._recent.clear()
             return False
 
-        motion = float(np.mean((hand_vec - self._prev_hand_vec) ** 2))
-        self._prev_hand_vec = hand_vec.copy()
+        self._recent.append(sign)
 
-        if motion < self.motion_threshold:
-            self._still_count += 1
-        else:
-            self._still_count = 0
+        if len(self._recent) < self.confirm_frames:
+            return False
 
-        # Fire exactly once at the threshold crossing
-        if self._still_count == self.threshold_frames:
-            self._still_count = 0
-            return True
+        # All recent frames agree on the same sign
+        if len(set(self._recent)) != 1:
+            return False
 
-        return False
+        # Don't re-commit the same sign during cooldown
+        if sign == self._last_committed and self._cooldown > 0:
+            return False
+
+        self._last_committed = sign
+        self._cooldown = self.cooldown_frames
+        self._recent.clear()
+        return True
 
     def reset(self):
-        self._still_count = 0
-        self._prev_hand_vec = None
+        self._recent.clear()
+        self._last_committed = None
+        self._cooldown = 0

@@ -9,7 +9,7 @@ def _fallback(signs: list[str]) -> str:
 
 
 async def signs_to_sentence(signs: list[str]) -> str:
-    """Convert a sequence of ASL sign labels to natural English via Gemini."""
+    """Convert a sequence of ASL sign labels to natural English via Gemini (Google AI Studio, free tier)."""
     if not signs:
         return ""
 
